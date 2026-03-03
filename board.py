@@ -76,3 +76,24 @@ class Board:
                 current_row.append(str(piece) if piece else None)
             # Print the current row
             print(current_row)
+
+    def find_piece(self, symbol: str, identifier: int, color: str):
+        return [
+            piece for square, piece in self.squares.items()
+            if  piece is not None and
+                piece.symbol == symbol and
+                piece.identifier == identifier and
+                piece.color == color
+    ]
+
+    def get_piece(self, square):
+        return self.squares[square]
+
+    def is_square_empty(self, square):
+        return self.get_piece(square) is None
+
+    def kill_piece(self, square):
+        piece = self.get_piece(square)
+        if piece is not None:
+            piece.die()
+            self.squares[square] = None

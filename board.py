@@ -1,4 +1,5 @@
 from pieces import Pawn, Rook, Knight, Bishop, Queen, King
+import json
 
 class Board:
     def __init__(self):
@@ -64,36 +65,65 @@ class Board:
         }
         self.squares.update(white_pawns)
 
+        # Set initial positions and board for each piece
+        for square, piece in self.squares.items():
+            if piece is not None:
+                piece.set_initial_position(square)
+                piece.define_board(self)
+
     def print_board(self):
-        # Loop over each row from 1 to 8
-        for row in range(1, 9):
-            # Create a list for the current row
+        # Loop over each row from 8 to 1
+        for row in range(8, 0, -1):
             current_row = []
-            # Loop over each column from a to h
             for col in range(ord('a'), ord('i')):
                 square_name = f"{chr(col)}{row}"
                 piece = self.squares[square_name]
                 current_row.append(str(piece) if piece else None)
-            # Print the current row
             print(current_row)
 
     def find_piece(self, symbol: str, identifier: int, color: str):
+        """Finds and returns a list of pieces that match the given symbol, identifier, and color."""
         return [
             piece for square, piece in self.squares.items()
-            if  piece is not None and
-                piece.symbol == symbol and
-                piece.identifier == identifier and
-                piece.color == color
-    ]
+            if piece is not None and
+               piece.symbol == symbol and
+               piece.identifier == identifier and
+               piece.color == color
+        ]
 
     def get_piece(self, square):
+        """Returns the piece that is on a specific square."""
         return self.squares[square]
 
     def is_square_empty(self, square):
+        """Returns True if the square is empty, False otherwise."""
         return self.get_piece(square) is None
 
     def kill_piece(self, square):
+        """Kills the piece on the specified square."""
         piece = self.get_piece(square)
         if piece is not None:
             piece.die()
             self.squares[square] = None
+
+    def save_board(self, filename='board.txt'):
+        """Save the current board state to a file."""
+        with open(filename, 'a') as file:
+            file.write(json.dumps({k: str(v) for k, v in self.squares.items() if v is not None}) + '\n')
+
+    @staticmethod
+    def load_board(filename='board.txt'):
+        """Load board states from a file using a generator."""
+        with open(filename, 'r') as file:
+            for line in file:
+                yield json.loads(line)
+
+    def print_saved_board(self, board_state):
+        """Print a saved board state."""
+        for row in range(8, 0, -1):
+            current_row = []
+            for col in range(ord('a'), ord('i')):
+                square_name = f"{chr(col)}{row}"
+                piece = board_state.get(square_name)
+                current_row.append(piece)
+            print(current_row)
